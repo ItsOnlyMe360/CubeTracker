@@ -1,0 +1,527 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Red Cube - Countdown</title>
+  <!-- Link para Font Awesome -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@700&display=swap');
+
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      color: #fff;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-start;
+      padding: 20px;
+      overflow-x: hidden;
+    }
+
+    #background-video {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      object-fit: cover;
+      z-index: -2;
+      filter: brightness(0.7);
+    }
+
+    body::before {
+      content: "";
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 200%;
+      height: 200%;
+      background: conic-gradient(from 0deg, #ff0044, #6600ff, #ff0044);
+      animation: spin 20s linear infinite;
+      filter: blur(200px) opacity(0.3);
+      z-index: -1;
+    }
+
+    @keyframes spin {
+      from { transform: rotate(0deg); }
+      to { transform: rotate(360deg); }
+    }
+
+    .countdown {
+      font-family: 'Orbitron', sans-serif;
+      font-size: 10em;
+      margin-bottom: 15px;
+      text-shadow: 0 0 15px #ff0044, 0 0 30px #ff0044;
+    }
+
+    .next-move {
+      font-size: 1.3em;
+      margin-bottom: 40px;
+      color: #ffcccc;
+    }
+
+    ul {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 0, 68, 0.5);
+      box-shadow: 0 0 20px rgba(255, 0, 68, 0.4);
+      backdrop-filter: blur(10px);
+      border-radius: 15px;
+      padding: 20px;
+      width: 100%;
+      max-width: 600px;
+      list-style: none;
+      text-align: left;
+      max-height: 60vh;
+      overflow-y: auto;
+      margin-bottom: 20px;
+    }
+
+    li {
+      margin: 8px 0;
+      padding: 8px 12px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-left: 3px solid #ff0044;
+      background: rgba(255, 0, 68, 0.1);
+      border-radius: 5px;
+      font-size: 0.95em;
+      color: #fff;
+    }
+
+    .tag {
+      background-color: #555;
+      color: #eee;
+      padding: 2px 6px;
+      border-radius: 3px;
+      font-size: 0.8em;
+      margin-left: 10px;
+      white-space: nowrap;
+    }
+
+    .past {
+      border-left: 3px solid #999;
+      background: rgba(200, 200, 200, 0.1);
+      color: #aaa;
+    }
+
+    .highlight {
+      border-left: 3px solid #00ff44 !important;
+      background: rgba(0, 255, 68, 0.1) !important;
+      color: #00ff44 !important;
+    }
+
+    .move-info {
+        display: flex;
+        align-items: center;
+        flex-wrap: wrap;
+    }
+
+    .datetime-display {
+        text-align: right;
+        color: #ff6688;
+        font-weight: bold;
+        white-space: nowrap;
+    }
+
+    .highlight .datetime-display {
+      color: #00ff44 !important;
+    }
+
+    /* Estilos para cards de Runa */
+    .rune-card {
+      border-left: 3px solid #fff !important;
+      background: rgba(255, 255, 255, 0.15) !important;
+      color: #eee !important;
+    }
+
+    .rune-card .tag {
+      background-color: #fff;
+      color: #000;
+      font-weight: bold;
+    }
+
+    .rune-card.highlight {
+      border-left: 3px solid #00ff44 !important;
+      background: rgba(0, 255, 68, 0.25) !important;
+      color: #00ff44 !important;
+    }
+
+    .rune-card.highlight .tag {
+      background-color: #00ff44;
+      color: #000;
+    }
+
+    .rune-card.past {
+      border-left: 3px solid #666 !important;
+      background: rgba(100, 100, 100, 0.1) !important;
+      color: #999 !important;
+    }
+
+    .rune-card.past .tag {
+        background-color: #666;
+        color: #ddd;
+    }
+
+    /* Base para botões circulares */
+    .circle-button {
+        border: none;
+        width: 50px;
+        height: 50px;
+        border-radius: 50%;
+        cursor: pointer;
+        font-size: 1.2em;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 4px 15px rgba(255, 0, 68, 0.4);
+        transition: background-color 0.3s ease, transform 0.2s ease;
+        flex-shrink: 0;
+    }
+
+    .circle-button:hover {
+        transform: scale(1.05);
+    }
+    
+    /* Botão de Mudo */
+    .mute-button {
+        background-color: #ff0044;
+        color: #fff;
+        position: fixed;
+        bottom: 80px; /* Acima do botão de scroll */
+        left: 20px;
+        z-index: 999;
+    }
+    .mute-button:hover {
+      background-color: #cc0033;
+    }
+
+    /* Estilos para o botão de scroll */
+    .scroll-to-current-button {
+      background-color: #ff0044;
+      color: #fff;
+      position: fixed;
+      bottom: 20px;
+      left: 20px;
+      z-index: 999;
+    }
+    .scroll-to-current-button:hover {
+      background-color: #cc0033;
+    }
+
+    /* Contêiner para o botão de idioma e suas opções */
+    .language-container {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      z-index: 1000;
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      justify-content: flex-end;
+    }
+
+    /* Estilos para o botão de idioma */
+    .language-button {
+      background-color: #007bff;
+      color: #fff;
+      box-shadow: 0 4px 15px rgba(0, 123, 255, 0.4);
+    }
+    .language-button:hover {
+      background-color: #0056b3;
+    }
+
+    /* Estilos para as opções de idioma */
+    .language-options {
+      list-style: none;
+      padding: 0;
+      margin-bottom: 10px;
+      margin-top: 0;
+      background: rgba(0, 0, 0, 0.8);
+      border-radius: 8px;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+      overflow: hidden;
+      display: none;
+      flex-direction: column;
+      width: max-content;
+    }
+    .language-options.active {
+      display: flex;
+    }
+    .language-options li {
+      padding: 10px 15px;
+      color: #fff;
+      cursor: pointer;
+      transition: background-color 0.2s ease;
+      border-left: none;
+      background: none;
+      margin: 0;
+      border-radius: 0;
+    }
+    .language-options li:hover {
+      background-color: rgba(255, 255, 255, 0.1);
+    }
+
+    @media (max-width: 768px) {
+      .countdown { font-size: 2.2em; }
+      .next-move { font-size: 1.1em; }
+      ul { width: 100%; }
+      .circle-button { width: 45px; height: 45px; font-size: 1em; }
+      .mute-button { bottom: 70px; left: 15px; }
+      .scroll-to-current-button { bottom: 15px; left: 15px; }
+      .language-container { bottom: 15px; right: 15px; }
+      .language-options { margin-bottom: 8px; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Vídeo de Fundo -->
+  <video id="background-video" autoplay loop muted playsinline>
+    <source src="https://c.feridinha.com/RlxNJ.webm" type="video/webm">
+    Seu navegador não suporta o vídeo de fundo.
+  </video>
+
+  <!-- Elementos de Áudio -->
+  <audio id="background-sound" src="https://c.feridinha.com/DFyqE.mp3" loop></audio>
+  <audio id="countdown-sound" src="https://f.feridinha.com/kwO7n.mp3"></audio>
+  <audio id="randomSound1" src="https://f.feridinha.com/NjdBL.mp3"></audio>
+  <audio id="randomSound2" src="https://f.feridinha.com/8IoSw.mp3"></audio>
+  <audio id="specialRandomSound" src="https://c.feridinha.com/DAZLy.mp3"></audio>
+
+  <div class="countdown" id="countdown">Loading...</div>
+  <div class="next-move" id="nextMove">Next: --</div>
+
+  <ul id="moves"></ul>
+
+  <!-- Botões de Controle -->
+  <button id="muteButton" class="circle-button mute-button" title="Mute/Unmute">
+      <i id="muteIcon" class="fas fa-volume-high"></i>
+  </button>
+  <button id="scrollToCurrent" class="circle-button scroll-to-current-button" title="Go to Current Roll">
+      <i class="fas fa-arrow-up"></i>
+  </button>
+
+  <div class="language-container">
+    <ul id="languageOptions" class="language-options">
+      <li data-lang="en">English</li>
+      <li data-lang="pt">Português</li>
+    </ul>
+    <button id="languageButton" class="circle-button language-button" title="Change Language">
+        <i class="fas fa-globe"></i>
+    </button>
+  </div>
+
+
+  <script>
+    // --- Configurações ---
+    const interval_post_r1 = 52 * 60000 + 30 * 1000, interval_post_r2 = 47 * 60000 + 30 * 1000,
+          interval_post_r3 = 53 * 60000 + 20 * 1000, interval_post_r4 = 39 * 60000 + 0 * 1000,
+          interval_post_r5 = 43 * 60000 + 0 * 1000, interval_post_r6 = 36 * 60000 + 30 * 1000,
+          interval_post_r7 = 28 * 60000 + 0 * 1000;
+    const pre_rune1_pattern_seconds = [52, 51, 52, 51, 52, 51, 51];
+    const firstMove = new Date("2025-09-01T16:42:51-03:00").getTime();
+    const runeMoves = {
+      42: "Runa 1", 114: "Runa 2", 186: "Runa 3", 240: "Runa 4",
+      314: "Runa 5", 381: "Runa 6", 460: "Runa 7", 564: "Final"
+    };
+    const runeTimestamps = {
+        42: new Date("2025-09-04T15:00:00-03:00").getTime(), 114: new Date("2025-09-08T06:00:00-03:00").getTime(),
+        186: new Date("2025-09-11T15:00:00-03:00").getTime(), 240: new Date("2025-09-14T15:00:00-03:00").getTime(),
+        314: new Date("2025-09-17T15:00:00-03:00").getTime(), 381: new Date("2025-09-20T15:00:00-03:00").getTime(),
+        460: new Date("2025-09-23T15:00:00-03:00").getTime(), 564: new Date("2025-09-26T15:00:00-03:00").getTime()
+    };
+    const translations = {
+        en: { move: "Roll", nextMove: "Next roll", scrollToCurrent: "Go to Current Roll", languageButton: "Change Language", lang_en: "English", lang_pt: "Portuguese", muteTitle: "Mute/Unmute", runeSeparator: "--- Upcoming Runes ---" },
+        pt: { move: "Rolada", nextMove: "Próxima rolada", scrollToCurrent: "Ir para a Rolada Atual", languageButton: "Mudar Idioma", lang_en: "Inglês", lang_pt: "Português", muteTitle: "Mutar/Desmutar", runeSeparator: "--- Próximas Runas ---" }
+    };
+
+    // --- Elementos do DOM ---
+    const backgroundSound = document.getElementById('background-sound'), countdownSound = document.getElementById('countdown-sound'),
+          randomSound1 = document.getElementById('randomSound1'), randomSound2 = document.getElementById('randomSound2'),
+          specialRandomSound = document.getElementById('specialRandomSound'), // NOVO
+          muteButton = document.getElementById('muteButton'), muteIcon = document.getElementById('muteIcon');
+
+    // --- Estado da Aplicação ---
+    let userLang = 'en', labels = translations[userLang], allMoves = [], highlightElement = null;
+    let initialScrollDone = false, isMuted = false, hasPlayedFinalSecondSound = false;
+    let randomSoundCycleTimer = 0, randomSoundTriggerTime = -1;
+    let specialSoundCycleTimer = 0, specialSoundTriggerTime = -1; // NOVO
+
+    // --- Funções de Áudio ---
+    function toggleMute() {
+        isMuted = !isMuted;
+        [backgroundSound, countdownSound, randomSound1, randomSound2, specialRandomSound].forEach(s => s.muted = isMuted);
+        muteIcon.className = isMuted ? 'fas fa-volume-xmark' : 'fas fa-volume-high';
+        muteButton.title = labels.muteTitle;
+    }
+    
+    function unlockAudio() {
+        if (!isMuted && backgroundSound.paused) {
+            backgroundSound.play().catch(e => console.log("Usuário precisa interagir para tocar áudio."));
+        }
+    }
+
+    function scheduleRandomSound() { randomSoundTriggerTime = Math.floor(Math.random() * 60) + 61; }
+    function scheduleSpecialSound() { specialSoundTriggerTime = Math.floor(Math.random() * 16) + 1; } // NOVO
+
+    // --- Funções Principais ---
+    function setLanguage(lang) {
+        userLang = lang;
+        labels = translations[lang];
+        document.getElementById("scrollToCurrent").title = labels.scrollToCurrent;
+        document.getElementById("languageButton").title = labels.languageButton;
+        muteButton.title = labels.muteTitle;
+        document.querySelectorAll('#languageOptions li').forEach(li => { li.textContent = labels['lang_' + li.dataset.lang]; });
+        updateCountdown();
+    }
+
+    function detectUserLanguage() {
+      const browserLang = navigator.language || navigator.userLanguage;
+      setLanguage(browserLang.startsWith("pt") ? 'pt' : 'en');
+    }
+
+    function formatDateTime(timestamp) {
+      const d = new Date(timestamp);
+      return d.toLocaleDateString(userLang, { day: "2-digit", month: "2-digit", year: "numeric" }) + " " +
+             d.toLocaleTimeString(userLang, { hour: "2-digit", minute: "2-digit", second: "2-digit" });
+    }
+
+    function precalculateAllMoves() {
+        let tempMoveTime = firstMove, tempMoveNumber = 1;
+        while (tempMoveNumber <= 600) {
+            if (runeTimestamps[tempMoveNumber]) { tempMoveTime = runeTimestamps[tempMoveNumber]; }
+            allMoves.push({ number: tempMoveNumber, time: tempMoveTime });
+            
+            let intervalToUse;
+            if (tempMoveNumber >= 480) intervalToUse = interval_post_r7;
+            else if (tempMoveNumber >= 381) intervalToUse = interval_post_r6;
+            else if (tempMoveNumber >= 314) intervalToUse = interval_post_r5;
+            else if (tempMoveNumber >= 240) intervalToUse = interval_post_r4;
+            else if (tempMoveNumber >= 186) intervalToUse = interval_post_r3;
+            else if (tempMoveNumber >= 114) intervalToUse = interval_post_r2;
+            else if (tempMoveNumber >= 42) intervalToUse = interval_post_r1;
+            else {
+                const baseInterval = 1 * 3600000 + 42 * 60000;
+                const secondsFromPattern = pre_rune1_pattern_seconds[(tempMoveNumber - 1) % 7];
+                intervalToUse = baseInterval + (secondsFromPattern * 1000);
+            }
+            if (!runeTimestamps[tempMoveNumber + 1]) { tempMoveTime += intervalToUse; }
+            tempMoveNumber++;
+        }
+    }
+
+    function updateCountdown() {
+        const now = Date.now();
+        const nextMove = allMoves.find(move => move.time > now);
+        if (!nextMove) { document.getElementById("countdown").textContent = "Finished"; return; }
+        
+        const nextMoveIndex = allMoves.indexOf(nextMove), currentMoveIndex = nextMoveIndex > 0 ? nextMoveIndex - 1 : -1;
+        const diff = nextMove.time - now;
+        const h = String(Math.floor(diff / 3600000)).padStart(2, "0"),
+              m = String(Math.floor((diff % 3600000) / 60000)).padStart(2, "0"),
+              s = String(Math.floor((diff % 60000) / 1000)).padStart(2, "0");
+
+        document.getElementById("countdown").textContent = `${h}:${m}:${s}`;
+        document.getElementById("nextMove").textContent = `${labels.nextMove} #${nextMove.number} - ${new Date(nextMove.time).toLocaleString(userLang)}`;
+
+        // Lógica do Som do Timer Final
+        if (h === '00' && m === '00' && s === '01' && !hasPlayedFinalSecondSound) {
+            countdownSound.play();
+            hasPlayedFinalSecondSound = true;
+        } else if (h !== '00' || m !== '00' || s !== '01') {
+            hasPlayedFinalSecondSound = false;
+        }
+
+        // Lógica do Som Aleatório 1
+        if (randomSoundCycleTimer <= 0) { randomSoundCycleTimer = 120; scheduleRandomSound(); }
+        if (randomSoundCycleTimer === randomSoundTriggerTime) { (Math.random() < 0.5 ? randomSound1 : randomSound2).play(); }
+        randomSoundCycleTimer--;
+
+        // Lógica do Som Aleatório Especial (NOVO)
+        if (specialSoundCycleTimer <= 0) {
+            specialSoundCycleTimer = 95; // 16s ativo + 79s espera
+            scheduleSpecialSound();
+        }
+        // A janela ativa são os últimos 16 segundos, que é quando o timer está entre 1 e 16
+        if (specialSoundCycleTimer === specialSoundTriggerTime) {
+            specialRandomSound.play();
+        }
+        specialSoundCycleTimer--;
+
+        // Lógica de Renderização da Lista
+        const movesList = document.getElementById("moves");
+        movesList.innerHTML = "";
+        const displayStart = Math.max(0, currentMoveIndex - 50), displayEnd = Math.min(allMoves.length - 1, currentMoveIndex + 50);
+        highlightElement = null;
+
+        for (let i = displayStart; i <= displayEnd; i++) {
+            const move = allMoves[i], li = document.createElement("li");
+            li.innerHTML = `<span class="move-info">${labels.move} #${move.number} ${runeMoves[move.number] ? `<span class="tag">${runeMoves[move.number]}</span>` : ''}</span><span class="datetime-display">${formatDateTime(move.time)}</span>`;
+            if (runeMoves[move.number]) li.classList.add("rune-card");
+            if (move.time < now) li.classList.add("past");
+            else if (move.number === nextMove.number) { li.classList.add("highlight"); highlightElement = li; }
+            movesList.appendChild(li);
+        }
+
+        let separatorAdded = false;
+        Object.keys(runeMoves).map(Number).sort((a, b) => a - b).forEach(rollNumber => {
+            const runeMove = allMoves.find(m => m.number === rollNumber);
+            if (!runeMove) return;
+            const moveIndex = allMoves.indexOf(runeMove);
+            if (moveIndex > displayEnd) {
+                if (!separatorAdded) {
+                    const separatorLi = document.createElement("li");
+                    separatorLi.style.cssText = "justify-content: center; border-left: 3px solid #6600ff; color: #cc99ff; font-weight: bold;";
+                    separatorLi.innerHTML = `<span>${labels.runeSeparator}</span>`;
+                    movesList.appendChild(separatorLi);
+                    separatorAdded = true;
+                }
+                const li = document.createElement("li");
+                li.classList.add("rune-card");
+                li.innerHTML = `<span class="move-info">${labels.move} #${runeMove.number} <span class="tag">${runeMoves[runeMove.number]}</span></span><span class="datetime-display">${formatDateTime(runeMove.time)}</span>`;
+                movesList.appendChild(li);
+            }
+        });
+
+        if (highlightElement && !initialScrollDone) { scrollToCurrentMove(); initialScrollDone = true; }
+    }
+
+    function scrollToCurrentMove() {
+      if (highlightElement) { highlightElement.scrollIntoView({ behavior: "smooth", block: "center" }); }
+    }
+
+    function toggleLanguageOptions() {
+        document.getElementById("languageOptions").classList.toggle("active");
+    }
+
+    // --- Inicialização ---
+    backgroundSound.volume = 0.1;
+    countdownSound.volume = 0.3;
+    randomSound1.volume = 0.4;
+    randomSound2.volume = 0.4;
+    specialRandomSound.volume = 0.4; // NOVO
+
+    muteButton.addEventListener('click', toggleMute);
+    document.addEventListener('click', unlockAudio, { once: true });
+    document.getElementById("scrollToCurrent").addEventListener("click", scrollToCurrentMove);
+    document.getElementById("languageButton").addEventListener("click", toggleLanguageOptions);
+    document.querySelectorAll('#languageOptions li').forEach(item => {
+        item.addEventListener('click', () => { setLanguage(item.dataset.lang); toggleLanguageOptions(); });
+    });
+
+    precalculateAllMoves();
+    detectUserLanguage();
+    scheduleRandomSound();
+    randomSoundCycleTimer = 120;
+    scheduleSpecialSound(); // NOVO
+    specialSoundCycleTimer = 95; // NOVO
+    setInterval(updateCountdown, 1000);
+    updateCountdown();
+  </script>
+</body>
+</html>
